@@ -34,13 +34,6 @@ dataset/ETTh1.csv  dataset/ETTh2.csv  dataset/ETTm1.csv  dataset/ETTm2.csv
 dataset/Weather.csv  dataset/ECL.csv  dataset/Traffic.csv  dataset/Solar.csv
 ```
 
-SHA-256 of the files we used:
-
-```
-ETTh1.csv  f18de3ad269cef59bb07b5438d79bb3042d3be49bdeecf01c1cd6d29695ee066
-ETTh2.csv  a3dc2c597b9218c7ce1cd55eb77b283fd459a1d09d753063f944967dd6b9218b
-```
-
 ## Usages
 Run all commands from the repository root.
 
@@ -50,8 +43,6 @@ Run all commands from the repository root.
 bash scripts/Store_ETT.sh        # ETTh1, ETTh2
 bash scripts/Store_{data_name}.sh  # ETTm, Weather, ECL, Traffic, Solar
 ```
-
-GPT-2 (124M) is downloaded from HuggingFace by default; set `GPT2_PATH=/path/to/gpt2` to use a local copy.
 
 * ### Train and inference
 
