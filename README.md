@@ -24,8 +24,6 @@ Multivariate time series forecasting requires predictions that account for both 
 > conda activate fucal
 ```
 
-The reported runs used one NVIDIA GPU with 46 GB of memory (batch size 1024, FP32).
-
 ## Datasets
 The datasets can be obtained from [TimesNet](https://drive.google.com/drive/folders/13Cg1KYOlzM5C7K8gK8NfC-F3EYxkM3D2). Place the files as
 
