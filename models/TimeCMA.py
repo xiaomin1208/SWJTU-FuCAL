@@ -49,31 +49,31 @@ class DiagnosticCollector:
     def print_all(self):
         if not self.data:
             return
-        print("\n ╔══════════════════════════════════════════════════════════")
-        print(" ║ MODEL INTERNAL DIAGNOSTICS")
-        print(" ╠══════════════════════════════════════════════════════════")
+        print("\n +==========================================================")
+        print(" | MODEL INTERNAL DIAGNOSTICS")
+        print(" +==========================================================")
         for key, info in self.data.items():
             if "msg" in info and info.get("msg") == "None":
-                print(f" ║ {key:45s}: None")
+                print(f" | {key:45s}: None")
             elif "value" in info:
-                print(f" ║ {key:45s}: {info['value']:.6f} {info['msg']}")
+                print(f" | {key:45s}: {info['value']:.6f} {info['msg']}")
             else:
                 alert = ""
                 if info.get("nan_count", 0) > 0:
-                    alert += " ⚠️NaN!"
+                    alert += " WARNINGNaN!"
                 if info.get("inf_count", 0) > 0:
-                    alert += " ⚠️Inf!"
+                    alert += " WARNINGInf!"
                 if info.get("zeros_pct", 0) > 95:
-                    alert += " 💀MOSTLY_ZERO"
+                    alert += " MOSTLY_ZERO"
                 if info.get("std", 1) < 1e-7:
-                    alert += " 🧊FROZEN"
+                    alert += " FROZEN"
                 shape_str = str(info.get("shape", "?"))
                 print(
-                    f" ║ {key:45s}: mean={info['mean']:+.6f} std={info['std']:.6f} "
+                    f" | {key:45s}: mean={info['mean']:+.6f} std={info['std']:.6f} "
                     f"[{info['min']:+.4f}, {info['max']:+.4f}] "
                     f"z%={info['zeros_pct']:.0f}% {shape_str}{alert} {info['msg']}"
                 )
-        print(" ╚══════════════════════════════════════════════════════════\n")
+        print(" +==========================================================\n")
 
 
 DIAG = DiagnosticCollector()

@@ -58,7 +58,7 @@ def resolve_embed_path(embed_root, data_name, seq_len, pred_len, flag,
             return path
 
     fallback = candidates[0]
-    print(f" >>> [Embed] ⚠️ No embedding directory found, using: {fallback}")
+    print(f" >>> [Embed] WARNING No embedding directory found, using: {fallback}")
     return fallback
 
 

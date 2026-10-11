@@ -18,13 +18,11 @@ def parse_args():
     parser.add_argument("--num_nodes", type=int, default=7)
     parser.add_argument("--input_len", type=int, default=96)
     parser.add_argument("--output_len", type=int, default=96)
-    parser.add_argument("--model_name", type=str, default="gpt2",
-                        help="HuggingFace model id or local path of GPT-2")
-    parser.add_argument("--layer", type=int, default=6,
-                        help="hidden layer to pool (6 for ETTh1/ETTh2, 11 for the other datasets)")
+    parser.add_argument("--model_name", type=str, default="gpt2")
+    parser.add_argument("--layer", type=int, default=6)
     parser.add_argument("--num_fuzzy_levels", type=int, default=15, choices=sorted(FUZZY_TERM_SETS))
     parser.add_argument("--z_precision", type=int, default=1)
-    parser.add_argument("--batch_size", type=int, default=1, help="windows per generation step")
+    parser.add_argument("--batch_size", type=int, default=1)
     parser.add_argument("--out_tag", type=str, default="gpt2")
     parser.add_argument("--embed_root", type=str, default="./Embeddings")
     return parser.parse_args()

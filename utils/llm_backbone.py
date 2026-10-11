@@ -338,5 +338,5 @@ if __name__ == "__main__":
         embs = encode_text_batch(backbone, test_texts[:10], batch_size=8)
         print(f"  Batch encode (10 texts): shape={embs.shape}")
 
-    print(f"\n  ✅ d_llm = {backbone.hidden_size}")
+    print(f"\n   d_llm = {backbone.hidden_size}")
     print(f"{'='*60}")

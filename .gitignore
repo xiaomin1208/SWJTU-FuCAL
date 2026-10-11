@@ -1,9 +1,0 @@
-__pycache__/
-*.pyc
-dataset/
-Embeddings/
-Results/
-results/
-*.pt
-*.npz
-*.h5

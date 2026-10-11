@@ -62,7 +62,7 @@ def compute_pearson_from_csv(data_path):
 
     data = np.array(data_rows)
     n_rows, num_nodes = data.shape
-    print(f"     [Pearson] {n_rows} rows × {num_nodes} variables: {col_names}")
+    print(f"     [Pearson] {n_rows} rows x {num_nodes} variables: {col_names}")
 
     if num_nodes <= 1:
         return 0.0, np.array([[1.0]]), num_nodes, n_rows
@@ -136,14 +136,14 @@ def should_use_var_mixer(data_path, num_nodes, n_train_samples,
     print(f"\n >>> [VarMixer Decision]")
     print(f"     Coupling condition (need either one):")
     print(f"       a) Mean|r| = {mean_abs_r:.4f} {'>' if cond_mean_r else '<'} "
-          f"{corr_threshold} → {'✓' if cond_mean_r else '✗'}")
+          f"{corr_threshold} -> {'yes' if cond_mean_r else 'no'}")
     print(f"       b) |r|>0.7 ratio = {n_gt_07}/{n_pairs} = {ratio_gt_07:.1%} "
           f"{'>' if cond_strong_pairs else '<'} {strong_pair_ratio:.0%} "
-          f"→ {'✓' if cond_strong_pairs else '✗'}")
-    print(f"     → Coupling: {'✓ PASS' if strong_coupling else '✗ FAIL'}")
+          f"-> {'yes' if cond_strong_pairs else 'no'}")
+    print(f"     -> Coupling: {'yes PASS' if strong_coupling else 'no FAIL'}")
     print(f"     Data condition:")
     print(f"       Samples = {n_train_samples} {'>' if enough_data else '<'} "
-          f"{sample_threshold} → {'✓' if enough_data else '✗'}")
+          f"{sample_threshold} -> {'yes' if enough_data else 'no'}")
     print(f"     |r|>0.5: {n_gt_05}/{n_pairs}")
     print(f"     >>> CrossVariableMixer: {'ENABLED' if use_var_mixer else 'DISABLED'}")
 

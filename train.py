@@ -1833,241 +1833,104 @@ def parse_args():
     p.add_argument("--seq_len", type=int, default=336)
     p.add_argument("--pred_len", type=int, default=96)
     p.add_argument("--batch_size", type=int, default=16)
-    p.add_argument("--test_batch_size", type=int, default=0,
-                   help="test-only batch size; 0 reuses --batch_size")
+    p.add_argument("--test_batch_size", type=int, default=0)
     p.add_argument("--d_llm", type=int, default=768)
     p.add_argument("--model_name", type=str, default="gpt2")
     p.add_argument("--model_tag", type=str, default=None)
     p.add_argument("--fusion_mod_init", type=str, default="zero",
-                   choices=["zero", "small"],
-                   help="zero = published behaviour, TextFreqModulator output is "
-                        "zero-initialised so the semantic branch starts exactly "
-                        "disconnected; small = non-zero init so it can train")
+                   choices=["zero", "small"])
     p.add_argument("--eval_drop_last", type=str, default="auto",
-                   choices=["auto", "true", "false"],
-                   help="auto = retain every ETTh1/ETTh2 validation/test "
-                        "window and use the TimeCMA drop-last convention on "
-                        "other datasets; true/false explicitly override it")
+                   choices=["auto", "true", "false"])
     p.add_argument("--train_drop_last", type=str, default="auto",
-                   choices=["auto", "true", "false"],
-                   help="auto = retain every ETTh1/ETTh2 training window and "
-                        "use TimeCMA drop-last training on other datasets; "
-                        "true/false explicitly override it")
+                   choices=["auto", "true", "false"])
     p.add_argument("--sem_encoder", type=str, default="llm",
-                   choices=["llm", "llm_mlp", "mlp", "sttf"],
-                   help="llm = frozen LM embedding (original); "
-                        "llm_mlp = same trainable MLP capacity fed by frozen "
-                        "GPT-2 semantic scores; "
-                        "mlp = structured-descriptor MLP; "
-                        "sttf = trainable structured-token Transformer")
-    p.add_argument("--semantic_direct", action="store_true", default=False,
-                   help="activate a non-zero direct semantic residual in addition "
-                        "to frequency modulation")
-    p.add_argument("--semantic_gate_floor", type=float, default=0.0,
-                   help="minimum direct semantic gate; only used with "
-                        "--semantic_direct")
-    p.add_argument("--dual_semantic", action="store_true", default=False,
-                   help="split a 2*d_lm cache into an exact legacy half and a "
-                        "variable-aware language half used only by the residual")
-    p.add_argument("--legacy_d_llm", type=int, default=0,
-                   help="legacy half width in a dual cache; 0 infers the frozen LLM width")
-    p.add_argument("--semantic_d_llm", type=int, default=0,
-                   help="semantic half width in a dual cache; 0 defaults to legacy width")
+                   choices=["llm", "llm_mlp", "mlp", "sttf"])
+    p.add_argument("--semantic_direct", action="store_true", default=False)
+    p.add_argument("--semantic_gate_floor", type=float, default=0.0)
+    p.add_argument("--dual_semantic", action="store_true", default=False)
+    p.add_argument("--legacy_d_llm", type=int, default=0)
+    p.add_argument("--semantic_d_llm", type=int, default=0)
     p.add_argument("--semantic_encoder", type=str, default="llm",
-                   choices=["llm", "llm_mlp", "mlp", "sttf"],
-                   help="encoder used only for the second half of a dual cache")
-    p.add_argument("--semantic_attribute_tokens", type=int, default=0,
-                   help="number of explicit fuzzy-attribute tokens in the semantic "
-                        "cache; 0 preserves the pooled-vector interface")
-    p.add_argument("--semantic_attribute_heads", type=int, default=4,
-                   help="attention heads for numerical-query/attribute-token fusion")
-    p.add_argument("--semantic_fixed_token_projection", action="store_true", default=False,
-                   help="use a parameter-free normalized pad/truncate map for LLM "
-                        "attribute tokens, preventing the adapter from relearning "
-                        "or erasing the frozen semantic geometry")
+                   choices=["llm", "llm_mlp", "mlp", "sttf"])
+    p.add_argument("--semantic_attribute_tokens", type=int, default=0)
+    p.add_argument("--semantic_attribute_heads", type=int, default=4)
+    p.add_argument("--semantic_fixed_token_projection", action="store_true", default=False)
     p.add_argument("--semantic_injection_mode", type=str, default="residual",
-                   choices=["residual", "film"],
-                   help="residual = direct final-space correction; film = zero-init "
-                        "semantic modulation of frozen patch features")
-    p.add_argument("--init_checkpoint", type=str, default=None,
-                   help="legacy best checkpoint used to initialize the exact base predictor")
-    p.add_argument("--semantic_adapter_only", action="store_true", default=False,
-                   help="freeze the initialized legacy predictor and train only the "
-                        "dual-language residual adapter")
-    p.add_argument("--preserve_semantic_init", action="store_true", default=False,
-                   help="keep loaded semantic residual/gate when adapter-only starts "
-                        "from a semantic checkpoint")
-    p.add_argument("--semantic_head_finetune", action="store_true", default=False,
-                   help="freeze the released feature extractor and jointly tune only "
-                        "its low-capacity forecast heads and the dual fuzzy-language path")
-    p.add_argument("--semantic_joint_finetune", action="store_true", default=False,
-                   help="fine-tune the initialized forecasting backbone together with "
-                        "the semantic adapter using separate learning rates")
-    p.add_argument("--semantic_backbone_lr", type=float, default=0.0,
-                   help="backbone learning rate for --semantic_joint_finetune; "
-                        "0 uses the dataset configuration learning rate")
-    p.add_argument("--fuzzy_fusion_rules", type=int, default=0,
-                   help="rules in the fuzzy multi-scale fusion; 0 keeps the "
-                        "published fixed prior over patch scales")
-    p.add_argument("--fredf_alpha", type=float, default=0.0,
-                   help="weight of the frequency-domain L1 term; "
-                        "0 reproduces the pointwise loss exactly")
-    p.add_argument("--soft_experts", type=int, default=0,
-                   help="fuzzy soft partition of the head: number of experts")
+                   choices=["residual", "film"])
+    p.add_argument("--init_checkpoint", type=str, default=None)
+    p.add_argument("--semantic_adapter_only", action="store_true", default=False)
+    p.add_argument("--preserve_semantic_init", action="store_true", default=False)
+    p.add_argument("--semantic_head_finetune", action="store_true", default=False)
+    p.add_argument("--semantic_joint_finetune", action="store_true", default=False)
+    p.add_argument("--semantic_backbone_lr", type=float, default=0.0)
+    p.add_argument("--fuzzy_fusion_rules", type=int, default=0)
+    p.add_argument("--fredf_alpha", type=float, default=0.0)
+    p.add_argument("--soft_experts", type=int, default=0)
     p.add_argument("--soft_expert_rank", type=int, default=4)
-    p.add_argument("--soft_expert_crisp", action="store_true",
-                   help="hard-assign the expert gate (ablation for gradedness)")
-    p.add_argument("--fusion_lr_mult", type=float, default=1.0,
-                   help="LR multiplier for the fuzzy rule base")
+    p.add_argument("--soft_expert_crisp", action="store_true")
+    p.add_argument("--fusion_lr_mult", type=float, default=1.0)
     p.add_argument("--fusion_desc", type=str, default="fuzzy",
-                   choices=["fuzzy", "crisp", "shuf", "fuzzy_llm", "fuzzy_llm_shuf", "fuzzy_mlp"],
-                   help="what the multi-scale fusion rules fire on")
-    p.add_argument("--align_lambda", type=float, default=0.0,
-                   help="weight of the fuzzy-anchor alignment loss; 0 keeps "
-                        "the published objective unchanged")
+                   choices=["fuzzy", "crisp", "shuf", "fuzzy_llm", "fuzzy_llm_shuf", "fuzzy_mlp"])
+    p.add_argument("--align_lambda", type=float, default=0.0)
     p.add_argument("--align_assets", type=str,
                    default="./align_assets_ETTh1.pt")
-    p.add_argument("--align_random_anchors", action="store_true", default=False,
-                   help="replace the GPT-2 anchors with a random orthonormal set: "
-                        "the control for whether the language geometry matters")
-    p.add_argument("--fuzzy_rules", type=int, default=0,
-                   help="number of Takagi-Sugeno consequents blended by the "
-                        "window fuzzy descriptor; 0 keeps the single head")
-    p.add_argument("--fuzzy_rules_tau", type=float, default=0.15,
-                   help="initial fuzziness of the rule blending; it is trained")
-    p.add_argument("--fuzzy_rules_crisp", action="store_true", default=False,
-                   help="argmax the responsibilities: the crisp ablation")
+    p.add_argument("--align_random_anchors", action="store_true", default=False)
+    p.add_argument("--fuzzy_rules", type=int, default=0)
+    p.add_argument("--fuzzy_rules_tau", type=float, default=0.15)
+    p.add_argument("--fuzzy_rules_crisp", action="store_true", default=False)
     p.add_argument("--semantic_gate_mode", type=str, default="global",
-                   choices=["global", "auto", "signed_auto", "auto_decay"],
-                   help="global = published single scalar semantic gate; "
-                        "auto = low-capacity per-sample/per-variable soft gate "
-                        "g(B,N) driven by forward-available history "
-                        "non-stationarity, numerical uncertainty, multi-scale "
-                        "disagreement, semantic residual magnitude and "
-                        "semantic/numeric consistency. 'auto' forces "
-                        "--semantic_gate_floor 0; signed_auto uses the same "
-                        "features but outputs a coefficient in [-1,1]; "
-                        "auto_decay learns sample/variable amplitude and a "
-                        "continuous lead-time validity horizon")
-    p.add_argument("--semantic_gate_init_bias", type=float, default=-2.1972246,
-                   help="logit bias of the auto gate; sigmoid(-2.1972246)=0.1, the "
-                        "same low start as the legacy scalar gate")
-    p.add_argument("--semantic_gate_const", type=float, default=-1.0,
-                   help="fixed output-space semantic gate in [0,1]; negative keeps learned gate")
-    p.add_argument("--semantic_residual_clip", type=float, default=0.0,
-                   help="tanh limiter on the language residual in the standardized "
-                        "residual space; 0 disables it (published behaviour)")
+                   choices=["global", "auto", "signed_auto", "auto_decay"])
+    p.add_argument("--semantic_gate_init_bias", type=float, default=-2.1972246)
+    p.add_argument("--semantic_gate_const", type=float, default=-1.0)
+    p.add_argument("--semantic_residual_clip", type=float, default=0.0)
     p.add_argument("--semantic_interaction_mode", type=str, default="prompt",
-                   choices=["prompt", "cross"],
-                   help="prompt = language-only residual head; cross = restricted "
-                        "language/numerical interaction head")
-    p.add_argument("--semantic_uncertainty", action="store_true", default=False,
-                   help="let the fuzzy-language reliability adapter provide a "
-                        "bounded residual to the predictive log scale")
-    p.add_argument("--semantic_uncertainty_clip", type=float, default=0.25,
-                   help="absolute bound for the fuzzy-language log-scale residual")
-    p.add_argument("--semantic_basis_rank", type=int, default=0,
-                   help="0 = existing free 96-step semantic head; positive = "
-                        "low-capacity linear probe on the frozen LLM embedding "
-                        "whose output is restricted to this many DCT bases")
+                   choices=["prompt", "cross"])
+    p.add_argument("--semantic_uncertainty", action="store_true", default=False)
+    p.add_argument("--semantic_uncertainty_clip", type=float, default=0.25)
+    p.add_argument("--semantic_basis_rank", type=int, default=0)
     p.add_argument(
         "--semantic_probe_mode", type=str, default="layernorm",
         choices=["layernorm", "raw", "norm_preserving"],
-        help="preprocessing used by the low-rank semantic probe: layernorm "
-             "reproduces v42; raw preserves fuzzy semantic amplitude; "
-             "norm_preserving concatenates raw values, relative direction, "
-             "and log magnitude",
     )
     p.add_argument(
         "--semantic_horizon_mode", type=str, default="global",
         choices=["global", "segmented", "multiscale", "frequency_tokens"],
-        help="global reproduces the original DCT residual; segmented learns "
-             "separate smooth short/mid/long corrections; multiscale adds a "
-             "global smooth correction to the segmented paths; "
-             "frequency_tokens selects explicit fuzzy tokens using only "
-             "frequency statistics from the observed history",
     )
-    p.add_argument("--semantic_lr", type=float, default=5e-3,
-                   help="optimizer learning rate for the frozen-base semantic adapter")
-    p.add_argument("--semantic_min_epochs", type=int, default=100,
-                   help="minimum adapter epochs before early stopping is allowed")
-    p.add_argument("--semantic_train_on_val_c1", action="store_true", default=False,
-                   help="fit only the frozen-base semantic adapter on the earlier "
-                        "half of validation and select it on the later half")
-    p.add_argument("--lambda_base_hinge", type=float, default=1.0,
-                   help="weight of the per-window base-relative non-regression "
-                        "hinge relu(err_semantic - err_base); only active in the "
-                        "dual-semantic adapter protocol")
-    p.add_argument("--lambda_mae_hinge", type=float, default=0.0,
-                   help="weight of the one-sided batch MAE non-regression hinge "
-                        "relu(MAE_semantic - MAE_frozen_base); only active in "
-                        "the dual-semantic adapter protocol")
-    p.add_argument("--lambda_router", type=float, default=0.0,
-                   help="weight for supervised regression of the semantic "
-                        "reliability gate to the detached optimal mixture")
-    p.add_argument("--router_warmup_steps", type=int, default=0,
-                   help="optimizer steps before reliability supervision starts; "
-                        "allows zero-init FiLM to form a measurable expert delta")
-    p.add_argument("--lambda_gate_l1", type=float, default=1e-3,
-                   help="L1 penalty on the per-sample/per-variable gate; keeps the "
-                        "gate closed unless the residual earns its opening")
-    p.add_argument("--lambda_residual", type=float, default=1e-3,
-                   help="L1 penalty on the gated language residual contribution")
-    p.add_argument("--lambda_semantic_alignment", type=float, default=0.0,
-                   help="weight of the same-variable cross-window contrastive "
-                        "alignment between fuzzy language and frozen TS features")
-    p.add_argument("--semantic_train_paraphrase_tag", type=str, default=None,
-                   help="meaning-preserving alternate embedding cache paired "
-                        "with the canonical training cache")
-    p.add_argument("--lambda_paraphrase_consistency", type=float, default=0.0,
-                   help="weight of the canonical/paraphrase forecast consistency "
-                        "loss; requires --semantic_train_paraphrase_tag")
-    p.add_argument("--validation_only", action="store_true", default=False,
-                   help="never touch the test split during training or model "
-                        "selection; the test set is read exactly once at the end. "
-                        "Implied by --dual_semantic --semantic_adapter_only")
-    p.add_argument("--selection_only", action="store_true", default=False,
-                   help="development protocol: never construct or read the test "
-                        "dataset; select on the first validation half and audit "
-                        "canonical/intervention caches on the held-out second half")
+    p.add_argument("--semantic_lr", type=float, default=5e-3)
+    p.add_argument("--semantic_min_epochs", type=int, default=100)
+    p.add_argument("--semantic_train_on_val_c1", action="store_true", default=False)
+    p.add_argument("--lambda_base_hinge", type=float, default=1.0)
+    p.add_argument("--lambda_mae_hinge", type=float, default=0.0)
+    p.add_argument("--lambda_router", type=float, default=0.0)
+    p.add_argument("--router_warmup_steps", type=int, default=0)
+    p.add_argument("--lambda_gate_l1", type=float, default=1e-3)
+    p.add_argument("--lambda_residual", type=float, default=1e-3)
+    p.add_argument("--lambda_semantic_alignment", type=float, default=0.0)
+    p.add_argument("--semantic_train_paraphrase_tag", type=str, default=None)
+    p.add_argument("--lambda_paraphrase_consistency", type=float, default=0.0)
+    p.add_argument("--validation_only", action="store_true", default=False)
+    p.add_argument("--selection_only", action="store_true", default=False)
     p.add_argument(
         "--semantic_val_scalar", action="store_true", default=False,
-        help="fit one signed scalar for the semantic contribution on val_select "
-             "by closed-form least squares, then freeze it for val_calib/test",
     )
     p.add_argument(
         "--semantic_val_min_rel_gain", type=float, default=0.005,
-        help="minimum relative MSE and MAE gain required on held-out val_calib "
-             "before the validation-fitted semantic scalar is enabled on test",
     )
-    p.add_argument("--counterfactual_model_tag", type=str, default=None,
-                   help="embedding cache tag with fixed reversed fuzzy labels; "
-                        "evaluated by the same trained checkpoint")
-    p.add_argument("--paraphrase_model_tag", type=str, default=None,
-                   help="embedding cache tag with meaning-preserving fuzzy paraphrases")
-    p.add_argument("--role_shuffle_model_tag", type=str, default=None,
-                   help="embedding cache tag with a fixed derangement of variable roles")
-    p.add_argument("--legacy_adapter_protocol", action="store_true", default=False,
-                   help="explicitly allow dual semantic adapter runs to use the legacy val-gate + test-confirm protocol")
-    p.add_argument("--control_model_tag", type=str, default=None,
-                   help="embedding cache tag with a geometry-matched control codebook")
+    p.add_argument("--counterfactual_model_tag", type=str, default=None)
+    p.add_argument("--paraphrase_model_tag", type=str, default=None)
+    p.add_argument("--role_shuffle_model_tag", type=str, default=None)
+    p.add_argument("--legacy_adapter_protocol", action="store_true", default=False)
+    p.add_argument("--control_model_tag", type=str, default=None)
     p.add_argument("--num_fuzzy_levels", type=int, default=5, choices=[4, 9, 15, 20,25,30])
     p.add_argument("--e_layer", type=int, default=2)
     p.add_argument("--d_layer", type=int, default=1)
-    p.add_argument("--exploratory_test_selection", action="store_true", default=False,
-                   help="record test MSE minima; explicitly NOT an independent test result")
+    p.add_argument("--exploratory_test_selection", action="store_true", default=False)
     p.add_argument("--head", type=int, default=4)
     p.add_argument("--weight_decay", type=float, default=5e-3)
     p.add_argument("--num_workers", type=int, default=10)
     p.add_argument("--epochs", type=int, default=999)
-    p.add_argument("--fixed_screen_epochs", type=int, default=0,
-                   help="diagnostic screening only: run exactly this many "
-                        "warmup epochs (may be below the production minimum) "
-                        "and disable patience-based stage transitions")
-    p.add_argument("--screen_train_samples", type=int, default=0,
-                   help="diagnostic screening only: use this many evenly "
-                        "spaced training windows while retaining full val/test "
-                        "evaluation; 0 uses the complete training split")
+    p.add_argument("--fixed_screen_epochs", type=int, default=0)
+    p.add_argument("--screen_train_samples", type=int, default=0)
     p.add_argument("--seed", type=int, default=2024)
     p.add_argument("--use_amp", action='store_true', default=True)
     p.add_argument("--no_amp", dest='use_amp', action='store_false')
@@ -2097,13 +1960,9 @@ def parse_args():
     p.add_argument("--resume", action="store_true", default=False)
     p.add_argument(
         "--eval_checkpoint_only", type=str, default=None,
-        help="load this checkpoint and evaluate the configured test loader once; "
-             "no optimizer step or checkpoint selection is performed",
     )
     p.add_argument(
         "--eval_test_model_tag", type=str, default=None,
-        help="optional test-only embedding tag for checkpoint forward audits; "
-             "training/validation data keep --model_tag",
     )
     p.add_argument("--uq_inline", action="store_true", default=False)
 
@@ -2417,7 +2276,7 @@ def save_results_csv(result_dir, row):
 
 
 def print_results_table(d):
-    print(f"\n{'═' * 96}\n ABLATION RESULTS\n{'═' * 96}")
+    print(f"\n{'=' * 96}\n ABLATION RESULTS\n{'=' * 96}")
     for k in [
         'Ablation', 'Dataset', 'Seq_Len', 'Pred_Len', 'Params', 'Train_Time_min', 'Epochs',
         'VarMixer', 'TrendMode', 'AnchorVal', 'FuzzyLevels', 'Chosen_Stage',
@@ -2426,18 +2285,18 @@ def print_results_table(d):
         if k in d:
             print(f"   {k:28s}: {d[k]}")
 
-    print("\n ── Main metrics ──")
+    print("\n -- Main metrics --")
     for k in ['MSE', 'MAE', 'RMSE', 'MAPE', 'SMAPE']:
         if k in d:
             v = d[k]
             print(f"   {k:28s}: {v:.6f}" if isinstance(v, float) else f"   {k:28s}: {v}")
 
-    print("\n ── CP metrics ──")
+    print("\n -- CP metrics --")
     for k in [f'Coverage_{95}', 'Interval_Width', 'Mean_Beta']:
         if k in d:
             v = d[k]
             print(f"   {k:28s}: {v:.6f}" if isinstance(v, float) else f"   {k:28s}: {v}")
-    print(f"{'═' * 96}\n")
+    print(f"{'=' * 96}\n")
 
 
 def main():
@@ -2501,7 +2360,7 @@ def main():
             raise ValueError('--selection_only requires a frozen dual-semantic adapter')
 
     print("=" * 72)
-    print(f" TimeCMA ABLATION: [{ablation}]")
+    print(f" Run: [{ablation}]")
     print(f" Dataset: {args.data_path} | seq={args.seq_len} pred={args.pred_len}")
     print(f" Fuzzy Levels: {args.num_fuzzy_levels}")
     if args.fixed_screen_epochs:
@@ -2510,7 +2369,7 @@ def main():
             "patience transitions disabled"
         )
     if skip_joint:
-        print(f" [NOTE] '{ablation}' → warmup only, joint stage skipped")
+        print(f" [NOTE] '{ablation}' -> warmup only, joint stage skipped")
     if selection_only:
         print(" [PROTOCOL] selection-only: test dataset/cache/loader are never "
               "constructed; select on val_select and audit on held-out val_calib")
@@ -2801,7 +2660,7 @@ def main():
                     f"win={_sem.get('window_win_rate', 0.0):.3f}"
                     if _sem else ""
                 )
-                print(f" ★ E{epoch:03d} [{ablation}/W] Val={val_mse:.6f}/{val_mae:.6f}"
+                print(f" * E{epoch:03d} [{ablation}/W] Val={val_mse:.6f}/{val_mae:.6f}"
                       f"{_sem_txt} (val-only selection)")
             else:
                 warmup_no_improve += 1
@@ -2825,7 +2684,7 @@ def main():
                         warmup_test_gate = test_mse
                         eng.save_best('warmup', val_mse, val_mae, test_mse, test_mae)
                         warmup_no_improve = 0
-                        print(f" ★ E{epoch:03d} [{ablation}/W] Val={val_mse:.6f}/{val_mae:.6f} "
+                        print(f" * E{epoch:03d} [{ablation}/W] Val={val_mse:.6f}/{val_mae:.6f} "
                               f"Test={test_mse:.4f}/{test_mae:.4f} (both improved, early)")
                     else:
                         warmup_no_improve += 1
@@ -2837,12 +2696,12 @@ def main():
                         warmup_val_mae_gate = val_mae
                         eng.save_best('warmup', val_mse, val_mae, test_mse, test_mae)
                         warmup_no_improve = 0
-                        print(f" ★ E{epoch:03d} [{ablation}/W] Val={val_mse:.6f}/{val_mae:.6f} "
+                        print(f" * E{epoch:03d} [{ablation}/W] Val={val_mse:.6f}/{val_mae:.6f} "
                               f"Test={test_mse:.4f}/{test_mae:.4f} (both improved)")
                     else:
                         warmup_no_improve += 1
-                        print(f"   E{epoch:03d} [{ablation}/W] Val={val_mse:.6f}/{val_mae:.6f}↓ "
-                              f"Test={test_mse:.6f}/{test_mae:.6f}↑ "
+                        print(f"   E{epoch:03d} [{ablation}/W] Val={val_mse:.6f}/{val_mae:.6f}down "
+                              f"Test={test_mse:.6f}/{test_mae:.6f}up "
                               f"(val ok, test no improve)")
             else:
                 warmup_no_improve += 1
@@ -2887,7 +2746,7 @@ def main():
                         joint_test_gate = test_mse
                         eng.save_best('joint', val_mse, val_mae, test_mse, test_mae)
                         joint_no_improve = 0
-                        print(f" ★ E{epoch:03d} [{ablation}/J] Val={val_mse:.6f}/{val_mae:.6f} "
+                        print(f" * E{epoch:03d} [{ablation}/J] Val={val_mse:.6f}/{val_mae:.6f} "
                               f"Test={test_mse:.4f}/{test_mae:.4f} (both improved, early)")
                     else:
                         joint_no_improve += 1
@@ -2899,12 +2758,12 @@ def main():
                         joint_val_mae_gate = val_mae
                         eng.save_best('joint', val_mse, val_mae, test_mse, test_mae)
                         joint_no_improve = 0
-                        print(f" ★ E{epoch:03d} [{ablation}/J] Val={val_mse:.6f}/{val_mae:.6f} "
+                        print(f" * E{epoch:03d} [{ablation}/J] Val={val_mse:.6f}/{val_mae:.6f} "
                               f"Test={test_mse:.4f}/{test_mae:.4f} (both improved)")
                     else:
                         joint_no_improve += 1
-                        print(f"   E{epoch:03d} [{ablation}/J] Val={val_mse:.6f}↓ "
-                              f"Test={test_mse:.4f}↑ (val ok, test no improve)")
+                        print(f"   E{epoch:03d} [{ablation}/J] Val={val_mse:.6f}down "
+                              f"Test={test_mse:.4f}up (val ok, test no improve)")
             else:
                 joint_no_improve += 1
 

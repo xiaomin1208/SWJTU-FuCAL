@@ -32,13 +32,12 @@ def parse_args():
     parser.add_argument("--input_len", type=int, default=96)
     parser.add_argument("--output_len", type=int, default=96)
     parser.add_argument("--num_fuzzy_levels", type=int, required=True)
-    parser.add_argument("--model_name", default="gpt2", help="HuggingFace model id or local path of GPT-2")
+    parser.add_argument("--model_name", default="gpt2")
     parser.add_argument("--hidden_layer", type=int, default=6)
-    parser.add_argument("--legacy_tag", default="gpt2", help="tag of the step-1 embeddings")
+    parser.add_argument("--legacy_tag", default="gpt2")
     parser.add_argument("--out_tag", required=True)
     parser.add_argument("--embed_root", default="./Embeddings")
-    parser.add_argument("--batch_size", type=int, default=256,
-                        help="must cover all 2 x 5 x K phrases in one batch")
+    parser.add_argument("--batch_size", type=int, default=256)
     return parser.parse_args()
 
 
